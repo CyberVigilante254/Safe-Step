@@ -1,357 +1,122 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#040810">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<title>SafeStep Signal</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg:#040810; --safe:#00ff88; --caution:#ffcc00; --danger:#ff2244;
-  --pulse:#00ccff; --text:#c8deff; --muted:#3a5070;
-}
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);
-  font-family:'Space Mono',monospace;color:var(--text);user-select:none}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#040810" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>SafeStep Signal</title>
 
-body::before{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  background-image:linear-gradient(rgba(0,200,255,.04) 1px,transparent 1px),
-  linear-gradient(90deg,rgba(0,200,255,.04) 1px,transparent 1px);
-  background-size:40px 40px}
-body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
-  background:radial-gradient(ellipse at 50% 50%,transparent 30%,var(--bg) 80%)}
+  <!-- Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
+    rel="stylesheet"
+  />
 
-#app{position:relative;z-index:1;width:100%;height:100%;display:flex;
-  flex-direction:column;align-items:center}
-
-header{width:100%;padding:20px 24px 12px;display:flex;align-items:center;
-  justify-content:space-between}
-.logo{font-family:'Orbitron',monospace;font-weight:900;font-size:13px;
-  letter-spacing:.15em;color:var(--pulse);text-shadow:0 0 20px #00ccff55;
-  text-transform:uppercase}
-.logo span{color:var(--safe)}
-.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);
-  transition:background .3s,box-shadow .3s}
-.dot.on{background:var(--safe);box-shadow:0 0 10px var(--safe)}
-
-#sonar-wrap{flex:1;display:flex;align-items:center;justify-content:center;
-  position:relative;width:100%}
-#cv{width:min(82vw,360px);height:min(82vw,360px)}
-
-#tlabel{position:absolute;font-family:'Orbitron',monospace;font-weight:900;
-  font-size:clamp(16px,5vw,26px);letter-spacing:.1em;text-align:center;
-  pointer-events:none;transition:color .4s,text-shadow .4s;
-  color:var(--safe);text-shadow:0 0 30px #00ff8888,0 0 80px #00ff8844}
-#tlabel small{display:block;font-family:'Space Mono',monospace;font-weight:400;
-  font-size:9px;letter-spacing:.2em;color:var(--muted);margin-top:5px}
-
-#bottom{width:100%;padding:0 20px 28px;display:flex;flex-direction:column;gap:12px}
-.ibar{display:flex;justify-content:space-between;font-size:9px;
-  letter-spacing:.15em;color:var(--muted)}
-#sens{font-family:'Orbitron',monospace;color:var(--pulse);font-size:9px}
-
-#fdisp{display:flex;gap:2px;height:38px;align-items:flex-end}
-.fb{flex:1;background:rgba(0,200,255,.28);border-radius:2px 2px 0 0;
-  min-height:2px;transition:height .08s,background .3s}
-
-.mrow{display:flex;align-items:center;gap:10px}
-.ml{font-size:9px;letter-spacing:.2em;color:var(--muted);min-width:30px;text-transform:uppercase}
-.mwrap{flex:1;height:6px;background:rgba(255,255,255,.04);border-radius:3px;
-  overflow:hidden;border:1px solid rgba(0,200,255,.1)}
-.mb{height:100%;width:0%;border-radius:3px;transition:width .1s,background .3s}
-.mv{font-size:9px;min-width:36px;text-align:right;color:var(--muted);
-  font-family:'Orbitron',monospace}
-
-#btn{width:100%;padding:18px;border:none;outline:none;border-radius:12px;
-  font-family:'Orbitron',monospace;font-weight:700;font-size:13px;
-  letter-spacing:.2em;text-transform:uppercase;cursor:pointer;
-  background:transparent;border:1px solid var(--pulse);color:var(--pulse);
-  text-shadow:0 0 20px #00ccff55;
-  box-shadow:0 0 20px rgba(0,200,255,.1),inset 0 0 20px rgba(0,200,255,.03);
-  transition:all .3s;position:relative;overflow:hidden}
-#btn::before{content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(0,200,255,.08),transparent);pointer-events:none}
-#btn:active{transform:scale(.98)}
-#btn.on{border-color:var(--danger);color:var(--danger);
-  text-shadow:0 0 20px #ff224455;
-  box-shadow:0 0 20px rgba(255,34,68,.15),inset 0 0 20px rgba(255,34,68,.03);
-  animation:bp 2s ease-in-out infinite}
-@keyframes bp{0%,100%{box-shadow:0 0 20px rgba(255,34,68,.15)}50%{box-shadow:0 0 40px rgba(255,34,68,.4)}}
-
-#aov{position:fixed;inset:0;z-index:100;display:flex;align-items:center;
-  justify-content:center;pointer-events:none;opacity:0;transition:opacity .15s}
-#aov.show{opacity:1}
-.afl{position:absolute;inset:0;background:var(--danger);opacity:0}
-#aov.show .afl{animation:fl .6s forwards}
-@keyframes fl{0%{opacity:.35}100%{opacity:0}}
-.atx{font-family:'Orbitron',monospace;font-weight:900;
-  font-size:clamp(28px,9vw,52px);color:#fff;letter-spacing:.05em;text-align:center;
-  text-shadow:0 0 40px var(--danger),0 0 80px var(--danger);opacity:0}
-#aov.show .atx{animation:tp .6s forwards}
-@keyframes tp{0%{opacity:0;transform:scale(.85)}30%{opacity:1;transform:scale(1.04)}
-  70%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.96)}}
-
-#hpill{position:fixed;bottom:110px;left:50%;transform:translateX(-50%);
-  font-size:9px;letter-spacing:.3em;color:var(--safe);
-  text-shadow:0 0 10px var(--safe);opacity:0;pointer-events:none;z-index:50;
-  text-transform:uppercase;transition:opacity .2s}
-#hpill.show{opacity:1}
-</style>
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
 <div id="app">
+
+  <!-- ── HEADER ── -->
   <header>
-    <div class="logo">Safe<span>Step</span> Signal</div>
-    <div class="dot" id="dot"></div>
+    <div class="logo">Safe<em>Step</em> Signal</div>
+    <div class="header-right">
+      <button id="debug-toggle">DEBUG</button>
+      <div class="live-dot" id="live-dot"></div>
+    </div>
   </header>
+
+  <!-- ── SONAR ── -->
   <div id="sonar-wrap">
-    <canvas id="cv"></canvas>
-    <div id="tlabel">SAFE<small id="tsub">SCANNER OFF</small></div>
+    <canvas id="sonar-canvas"></canvas>
+    <div id="threat-label">
+      SAFE
+      <span class="sub" id="threat-sub">SCANNER OFF</span>
+    </div>
   </div>
-  <div id="bottom">
-    <div class="ibar"><span id="sens">SENS ——</span><span>CROSSWALK GUARD</span></div>
-    <div id="fdisp"></div>
-    <div class="mrow">
-      <span class="ml">ENV</span>
-      <div class="mwrap"><div class="mb" id="eb" style="background:var(--pulse)"></div></div>
-      <span class="mv" id="ev">—</span>
+
+  <!-- ── BOTTOM PANEL ── -->
+  <div id="bottom-panel">
+
+    <div class="info-row">
+      <span id="sens-readout">BASELINE ——</span>
+      <span>CROSSWALK GUARD · v2</span>
     </div>
-    <div class="mrow">
-      <span class="ml">VEH</span>
-      <div class="mwrap"><div class="mb" id="vb" style="background:var(--safe)"></div></div>
-      <span class="mv" id="vv">—</span>
+
+    <!-- Sensitivity slider -->
+    <div class="slider-row">
+      <span class="slider-label">SENSITIVITY</span>
+      <input type="range" id="sens-slider" min="1" max="5" step="1" value="3" />
+      <span id="slider-val">3</span>
     </div>
-    <button id="btn">⬤ START SCANNING</button>
+
+    <!-- Frequency visualiser -->
+    <div id="freq-bars"></div>
+
+    <!-- Level meters -->
+    <div class="meter-row">
+      <span class="meter-label">ENV</span>
+      <div class="meter-track">
+        <div class="meter-fill" id="env-fill" style="background:var(--pulse)"></div>
+      </div>
+      <span class="meter-val" id="env-val">—</span>
+    </div>
+    <div class="meter-row">
+      <span class="meter-label">VEH</span>
+      <div class="meter-track">
+        <div class="meter-fill" id="veh-fill" style="background:var(--safe)"></div>
+      </div>
+      <span class="meter-val" id="veh-val">—</span>
+    </div>
+
+    <!-- Debug panel (hidden by default, toggle via header button) -->
+    <div id="debug-panel">
+      BASELINE <span id="d-baseline">—</span> &nbsp;|&nbsp;
+      VEH <span id="d-veh">—</span> &nbsp;|&nbsp;
+      NOISE <span id="d-noise">—</span> &nbsp;|&nbsp;
+      THRESH C/D <span id="d-thresh">—</span> &nbsp;|&nbsp;
+      HOLD <span id="d-hold">0</span>/<span id="d-hold-max">—</span> &nbsp;|&nbsp;
+      FRAMES <span id="d-frames">0</span>
+    </div>
+
+    <!-- Data collection (label + record + download) -->
+    <div class="label-btns">
+      <button data-label="clear"   class="active">CLEAR</button>
+      <button data-label="vehicle">VEHICLE</button>
+      <button data-label="danger" >DANGER</button>
+    </div>
+
+    <div class="data-row">
+      <button class="btn" id="record-btn">⏺  RECORD DATA</button>
+      <button class="btn" id="download-btn">↓ DOWNLOAD</button>
+    </div>
+
+    <!-- Main scan button -->
+    <button class="btn" id="scan-btn" style="width:100%">⬤ &nbsp;START SCANNING</button>
+
   </div>
 </div>
-<div id="aov"><div class="afl"></div><div class="atx">⚠ VEHICLE<br>APPROACHING</div></div>
-<div id="hpill">▮▮▮ VIBRATING ▮▮▮</div>
 
-<script>
-// ── CONFIG ────────────────────────────────────────────────────────────────────
-const FFT_SZ  = 2048;
-const SAMPLE_RATE = 44100;
-const VEH_LO  = 50;    // Hz: engine fundamentals start
-const VEH_HI  = 550;   // Hz: engine fundamentals end
-const T_CAUTION = 28;  // vehicle band dB above baseline → caution
-const T_DANGER  = 62;  // vehicle band dB above baseline → danger
+<!-- ── DANGER OVERLAY ── -->
+<div id="danger-overlay">
+  <div class="danger-flash"></div>
+  <div class="danger-text">⚠ VEHICLE<br>APPROACHING</div>
+</div>
 
-// ── STATE ─────────────────────────────────────────────────────────────────────
-let audioCtx, analyser, micStream, freqData;
-let scanning   = false;
-let angle      = 0;
-let blips      = [];
-let threat     = 0;
-let lastVib    = 0;
-let baseline   = 0;
-let calBuf     = [];
-let calibrated = false;
-let calF       = 0;
+<!-- ── HAPTIC PILL ── -->
+<div id="haptic-pill">▮▮▮ VIBRATING ▮▮▮</div>
 
-// ── DOM ───────────────────────────────────────────────────────────────────────
-const cv   = document.getElementById('cv');
-const cx2  = cv.getContext('2d');
-const tlbl = document.getElementById('tlabel');
-const tsub = document.getElementById('tsub');
-const btn  = document.getElementById('btn');
-const dot  = document.getElementById('dot');
-const eb   = document.getElementById('eb');
-const vb   = document.getElementById('vb');
-const ev   = document.getElementById('ev');
-const vv   = document.getElementById('vv');
-const aov  = document.getElementById('aov');
-const hp   = document.getElementById('hpill');
-const fdisp= document.getElementById('fdisp');
-const sens = document.getElementById('sens');
+<!-- ── MIC ERROR ── -->
+<div id="mic-error">
+  <h2>MIC ACCESS DENIED</h2>
+  <p>SafeStep needs your microphone to detect approaching vehicles.<br>Allow access and reload.</p>
+  <button onclick="location.reload()">RELOAD</button>
+</div>
 
-// ── BUILD FREQ BARS ───────────────────────────────────────────────────────────
-const NB = 32;
-for (let i=0;i<NB;i++){const d=document.createElement('div');d.className='fb';fdisp.appendChild(d);}
-const fbars=[...fdisp.querySelectorAll('.fb')];
-
-// ── CANVAS ────────────────────────────────────────────────────────────────────
-function resize(){const s=Math.min(cv.offsetWidth,cv.offsetHeight);cv.width=cv.height=s;}
-resize();
-window.addEventListener('resize',resize);
-
-// ── HELPERS ───────────────────────────────────────────────────────────────────
-function col(t){return t===2?'#ff2244':t===1?'#ffcc00':'#00ff88';}
-function rgb(h){return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];}
-function fi(hz){return Math.round(hz/(SAMPLE_RATE/FFT_SZ));}
-
-// ── SONAR DRAW ────────────────────────────────────────────────────────────────
-function draw(){
-  const W=cv.width,H=cv.height,cx=W/2,cy=H/2,R=W*.46,c=col(threat);
-  cx2.clearRect(0,0,W,H);
-
-  // rings
-  for(let i=1;i<=4;i++){
-    cx2.beginPath();cx2.arc(cx,cy,R*i/4,0,Math.PI*2);
-    cx2.strokeStyle=`rgba(0,200,255,${.04+i*.02})`;cx2.lineWidth=1;cx2.stroke();
-  }
-  // crosshair
-  cx2.strokeStyle='rgba(0,200,255,.06)';cx2.lineWidth=1;
-  [[cx-R,cy,cx+R,cy],[cx,cy-R,cx,cy+R]].forEach(([x1,y1,x2,y2])=>{
-    cx2.beginPath();cx2.moveTo(x1,y1);cx2.lineTo(x2,y2);cx2.stroke();
-  });
-  // sweep trail
-  const [r,g,b]=rgb(c),sw=Math.PI*.6;
-  for(let i=0;i<50;i++){
-    const a=angle-sw*i/50;
-    cx2.beginPath();cx2.moveTo(cx,cy);cx2.arc(cx,cy,R,a,a+sw/50);cx2.closePath();
-    cx2.fillStyle=`rgba(${r},${g},${b},${(1-i/50)*.17})`;cx2.fill();
-  }
-  // sweep line
-  cx2.beginPath();cx2.moveTo(cx,cy);
-  cx2.lineTo(cx+Math.cos(angle)*R,cy+Math.sin(angle)*R);
-  cx2.strokeStyle=c;cx2.lineWidth=2;cx2.shadowColor=c;cx2.shadowBlur=14;cx2.stroke();cx2.shadowBlur=0;
-  // blips
-  blips=blips.filter(bl=>bl.age<90);
-  blips.forEach(bl=>{
-    const a2=1-bl.age/90,sz=bl.sz*(1+bl.age*.012);
-    cx2.beginPath();cx2.arc(bl.x,bl.y,sz,0,Math.PI*2);
-    cx2.fillStyle=`rgba(${bl.r},${bl.g},${bl.b},${a2*.85})`;
-    cx2.shadowColor=bl.c;cx2.shadowBlur=12;cx2.fill();cx2.shadowBlur=0;
-    bl.age++;
-  });
-  // outer ring
-  cx2.beginPath();cx2.arc(cx,cy,R,0,Math.PI*2);
-  cx2.strokeStyle=c;cx2.lineWidth=2;cx2.shadowColor=c;cx2.shadowBlur=16;cx2.stroke();cx2.shadowBlur=0;
-  // ticks
-  for(let i=0;i<12;i++){
-    const a=i/12*Math.PI*2;
-    cx2.beginPath();
-    cx2.moveTo(cx+Math.cos(a)*(R-10),cy+Math.sin(a)*(R-10));
-    cx2.lineTo(cx+Math.cos(a)*R,cy+Math.sin(a)*R);
-    cx2.strokeStyle='rgba(0,200,255,.4)';cx2.lineWidth=i%3===0?2:1;cx2.stroke();
-  }
-  angle+=(scanning?.038:.007);
-  if(angle>Math.PI*2)angle=0;
-}
-
-// ── THREAT UI ─────────────────────────────────────────────────────────────────
-let _last=-1;
-function setThreat(t){
-  if(t===_last)return; _last=t; threat=t;
-  const LABELS=['SAFE','CAUTION','DANGER'];
-  const SUBS=['CROSSING CLEAR','VEHICLE NEARBY','STOP — VEHICLE CLOSE'];
-  const COLS=['var(--safe)','var(--caution)','var(--danger)'];
-  const GLOW=[
-    '0 0 30px #00ff8888,0 0 80px #00ff8844',
-    '0 0 30px #ffcc0088,0 0 80px #ffcc0044',
-    '0 0 30px #ff224488,0 0 80px #ff224444'
-  ];
-  tlbl.childNodes[0].nodeValue=LABELS[t];
-  tsub.textContent=SUBS[t];
-  tlbl.style.color=COLS[t];
-  tlbl.style.textShadow=GLOW[t];
-  vb.style.background=COLS[t];
-  if(t===2){aov.classList.add('show');setTimeout(()=>aov.classList.remove('show'),700);}
-}
-
-// ── HAPTIC ────────────────────────────────────────────────────────────────────
-function haptic(t){
-  if(!navigator.vibrate)return;
-  const now=Date.now();
-  if(now-lastVib<(t===2?280:900))return;
-  lastVib=now;
-  navigator.vibrate(t===2?[120,60,120,60,200]:[80,120,80]);
-  hp.classList.add('show');
-  setTimeout(()=>hp.classList.remove('show'),400);
-}
-
-// ── AUDIO ANALYSIS ────────────────────────────────────────────────────────────
-function analyze(){
-  analyser.getByteFrequencyData(freqData);
-  let tot=0;for(let i=0;i<freqData.length;i++)tot+=freqData[i];
-  const avg=tot/freqData.length;
-  const lo=fi(VEH_LO),hi=fi(VEH_HI);
-  let vs=0;for(let i=lo;i<=hi;i++)vs+=freqData[i];
-  const veh=vs/(hi-lo);
-
-  if(!calibrated){
-    calBuf.push(avg);calF++;
-    tsub.textContent=`CALIBRATING ${Math.min(100,Math.round(calF/60*100))}%`;
-    if(calF>=60){
-      baseline=calBuf.reduce((a,b)=>a+b,0)/calBuf.length;
-      calibrated=true;
-      sens.textContent=`SENS ${Math.round(baseline)}dB`;
-    }
-    return{avg,veh};
-  }
-
-  const noise=Math.max(0,veh-baseline*.35);
-  const nt=noise>T_DANGER?2:noise>T_CAUTION?1:0;
-  setThreat(nt);
-
-  if(nt>0&&Math.random()<.15){
-    const W=cv.width,H=cv.height,cx=W/2,cy=H/2,R=W*.46;
-    const dist=nt===2?R*(.25+Math.random()*.3):R*(.45+Math.random()*.35);
-    const a=angle+(Math.random()-.5)*.9;
-    const bx=cx+Math.cos(a)*dist,by=cy+Math.sin(a)*dist;
-    const c=col(nt);const[r,g,bl]=rgb(c);
-    blips.push({x:bx,y:by,age:0,sz:4+nt*4,c,r,g,b:bl});
-  }
-  if(nt>0)haptic(nt);
-  return{avg,veh};
-}
-
-// ── MAIN LOOP ─────────────────────────────────────────────────────────────────
-function loop(){
-  draw();
-  if(scanning&&analyser){
-    const{avg,veh}=analyze();
-    const pct=v=>Math.min(100,v/120*100)+'%';
-    eb.style.width=pct(avg);vb.style.width=pct(veh);
-    ev.textContent=Math.round(avg)+'dB';vv.textContent=Math.round(veh)+'dB';
-    const start=fi(20),end=fi(4000),range=end-start;
-    fbars.forEach((bar,i)=>{
-      const s=start+Math.floor(range*i/NB),e=start+Math.floor(range*(i+1)/NB);
-      let sum=0;for(let j=s;j<e;j++)sum+=freqData[j];
-      bar.style.height=Math.max(2,(sum/(e-s))/180*38)+'px';
-      const f=(i/NB)*4000;
-      bar.style.background=(f>=VEH_LO&&f<=VEH_HI)?col(threat):'rgba(0,200,255,.28)';
-    });
-  }
-  requestAnimationFrame(loop);
-}
-
-// ── START / STOP ──────────────────────────────────────────────────────────────
-async function startScan(){
-  try{
-    micStream=await navigator.mediaDevices.getUserMedia({audio:{
-      echoCancellation:false,noiseSuppression:false,autoGainControl:false
-    }});
-    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    analyser=audioCtx.createAnalyser();
-    analyser.fftSize=FFT_SZ;analyser.smoothingTimeConstant=.72;
-    audioCtx.createMediaStreamSource(micStream).connect(analyser);
-    freqData=new Uint8Array(analyser.frequencyBinCount);
-    scanning=true;calibrated=false;calF=0;calBuf=[];_last=-1;
-    setThreat(0);tsub.textContent='CALIBRATING…';
-    btn.textContent='◼ STOP SCANNING';btn.classList.add('on');dot.classList.add('on');
-  }catch(e){
-    alert('Microphone access required. SafeStep needs to hear traffic to protect you.');
-  }
-}
-
-function stopScan(){
-  scanning=false;
-  micStream?.getTracks().forEach(t=>t.stop());
-  audioCtx?.close();
-  micStream=analyser=audioCtx=freqData=null;
-  blips=[];calibrated=false;_last=-1;setThreat(0);
-  tsub.textContent='SCANNER OFF';
-  btn.textContent='⬤ START SCANNING';btn.classList.remove('on');dot.classList.remove('on');
-  eb.style.width=vb.style.width='0%';ev.textContent=vv.textContent='—';
-  fbars.forEach(b=>{b.style.height='2px';b.style.background='rgba(0,200,255,.28)';});
-  sens.textContent='SENS ——';
-}
-
-btn.addEventListener('click',()=>scanning?stopScan():startScan());
-loop();
-</script>
+<!-- ── SCRIPTS (ES modules) ── -->
+<script type="module" src="js/main.js"></script>
 </body>
 </html>

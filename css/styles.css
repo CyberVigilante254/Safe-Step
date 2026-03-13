@@ -1,0 +1,341 @@
+/* ═══════════════════════════════════════════════════════════════
+   styles.css — SafeStep Signal
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Design tokens ──────────────────────────────────────────── */
+:root {
+  --bg:        #040810;
+  --surface:   #080f1e;
+  --border:    rgba(0, 200, 255, 0.10);
+  --safe:      #00ff88;
+  --caution:   #ffcc00;
+  --danger:    #ff2244;
+  --pulse:     #00ccff;
+  --text:      #c8deff;
+  --muted:     #3a5070;
+  --font-hud:  'Orbitron', monospace;
+  --font-body: 'Space Mono', monospace;
+}
+
+/* ── Reset & base ───────────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0; padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: var(--font-body);
+  color: var(--text);
+  user-select: none;
+}
+
+/* Grid background */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0,200,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,200,255,.035) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Vignette */
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, transparent 25%, var(--bg) 78%);
+}
+
+/* ── Layout ─────────────────────────────────────────────────── */
+#app {
+  position: relative; z-index: 1;
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column; align-items: center;
+  max-width: 480px; margin: 0 auto;
+}
+
+/* ── Header ─────────────────────────────────────────────────── */
+header {
+  width: 100%;
+  padding: 18px 20px 10px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+.logo {
+  font-family: var(--font-hud);
+  font-weight: 900; font-size: 12px;
+  letter-spacing: .18em; text-transform: uppercase;
+  color: var(--pulse);
+  text-shadow: 0 0 18px rgba(0,200,255,.45);
+}
+.logo em { color: var(--safe); font-style: normal; }
+
+.header-right {
+  display: flex; align-items: center; gap: 12px;
+}
+
+/* Debug toggle */
+#debug-toggle {
+  font-size: 8px; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--muted); background: none;
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 3px 7px; cursor: pointer;
+  font-family: var(--font-body);
+  transition: color .2s, border-color .2s;
+}
+#debug-toggle:hover,
+#debug-toggle.on { color: var(--pulse); border-color: var(--pulse); }
+
+/* Live dot */
+.live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--muted);
+  transition: background .3s, box-shadow .3s;
+}
+.live-dot.active {
+  background: var(--safe);
+  box-shadow: 0 0 10px var(--safe), 0 0 20px rgba(0,255,136,.3);
+}
+
+/* ── Sonar ───────────────────────────────────────────────────── */
+#sonar-wrap {
+  flex: 1;
+  display: flex; align-items: center; justify-content: center;
+  position: relative; width: 100%;
+}
+
+#sonar-canvas {
+  width:  min(80vw, 340px);
+  height: min(80vw, 340px);
+}
+
+#threat-label {
+  position: absolute;
+  font-family: var(--font-hud); font-weight: 900;
+  font-size: clamp(15px, 4.5vw, 24px); letter-spacing: .1em;
+  text-align: center; pointer-events: none;
+  color: var(--safe);
+  text-shadow: 0 0 28px rgba(0,255,136,.55), 0 0 70px rgba(0,255,136,.22);
+  transition: color .5s, text-shadow .5s;
+}
+#threat-label .sub {
+  display: block;
+  font-family: var(--font-body); font-weight: 400;
+  font-size: 8px; letter-spacing: .22em;
+  color: var(--muted); margin-top: 6px;
+}
+
+/* ── Bottom panel ───────────────────────────────────────────── */
+#bottom-panel {
+  width: 100%;
+  padding: 0 18px 20px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+
+.info-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 8px; letter-spacing: .17em; color: var(--muted);
+  text-transform: uppercase;
+}
+#sens-readout { font-family: var(--font-hud); color: var(--pulse); font-size: 8px; }
+
+/* Sensitivity slider */
+.slider-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.slider-label {
+  font-size: 8px; letter-spacing: .15em; color: var(--muted);
+  text-transform: uppercase; min-width: 56px;
+}
+input[type=range] {
+  flex: 1; -webkit-appearance: none; appearance: none;
+  height: 4px; border-radius: 2px;
+  background: var(--border); outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--pulse);
+  box-shadow: 0 0 8px rgba(0,200,255,.6);
+}
+#slider-val {
+  font-family: var(--font-hud); font-size: 8px;
+  color: var(--pulse); min-width: 28px; text-align: right;
+}
+
+/* Freq bars */
+#freq-bars {
+  display: flex; gap: 2px; height: 34px;
+  align-items: flex-end;
+}
+.fbar {
+  flex: 1; min-height: 2px;
+  background: rgba(0,200,255,.25);
+  border-radius: 2px 2px 0 0;
+  transition: height .07s, background .3s;
+}
+
+/* Level meters */
+.meter-row {
+  display: flex; align-items: center; gap: 10px;
+}
+.meter-label {
+  font-size: 8px; letter-spacing: .18em; color: var(--muted);
+  text-transform: uppercase; min-width: 28px;
+}
+.meter-track {
+  flex: 1; height: 5px;
+  background: rgba(255,255,255,.04);
+  border-radius: 3px; overflow: hidden;
+  border: 1px solid var(--border);
+}
+.meter-fill {
+  height: 100%; width: 0%; border-radius: 3px;
+  transition: width .09s, background .3s;
+}
+.meter-val {
+  font-family: var(--font-hud); font-size: 8px;
+  color: var(--muted); min-width: 34px; text-align: right;
+}
+
+/* Debug panel */
+#debug-panel {
+  display: none;
+  background: rgba(0,200,255,.04);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 12px;
+  font-size: 8px; line-height: 1.8;
+  color: var(--muted); letter-spacing: .1em;
+}
+#debug-panel.visible { display: block; }
+#debug-panel span { color: var(--pulse); font-family: var(--font-hud); }
+
+/* ── Data collection row ─────────────────────────────────────── */
+.data-row {
+  display: flex; gap: 6px;
+}
+
+/* Label buttons */
+.label-btns {
+  display: flex; gap: 4px; flex-wrap: wrap;
+}
+[data-label] {
+  flex: 1; padding: 6px 4px;
+  font-family: var(--font-hud); font-size: 7px;
+  letter-spacing: .12em; text-transform: uppercase;
+  border: 1px solid var(--border); border-radius: 5px;
+  background: transparent; color: var(--muted); cursor: pointer;
+  transition: all .2s;
+}
+[data-label]:hover { color: var(--pulse); border-color: var(--pulse); }
+[data-label].active { color: var(--bg); background: var(--pulse); border-color: var(--pulse); }
+[data-label="vehicle"].active { background: var(--caution); border-color: var(--caution); color: var(--bg); }
+[data-label="danger"].active  { background: var(--danger);  border-color: var(--danger);  color: #fff; }
+
+/* ── Buttons ─────────────────────────────────────────────────── */
+.btn {
+  flex: 1; padding: 14px 10px;
+  border-radius: 10px; border: 1px solid var(--pulse);
+  background: transparent; outline: none; cursor: pointer;
+  font-family: var(--font-hud); font-weight: 700;
+  font-size: 11px; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--pulse);
+  text-shadow: 0 0 14px rgba(0,200,255,.45);
+  box-shadow: 0 0 16px rgba(0,200,255,.07);
+  transition: all .25s; position: relative; overflow: hidden;
+}
+.btn::before {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(135deg, rgba(0,200,255,.07), transparent);
+}
+.btn:active { transform: scale(.98); }
+
+#scan-btn.scanning {
+  border-color: var(--danger); color: var(--danger);
+  text-shadow: 0 0 14px rgba(255,34,68,.45);
+  box-shadow: 0 0 16px rgba(255,34,68,.1);
+  animation: btn-pulse 2.4s ease-in-out infinite;
+}
+@keyframes btn-pulse {
+  0%, 100% { box-shadow: 0 0 16px rgba(255,34,68,.1); }
+  50%       { box-shadow: 0 0 34px rgba(255,34,68,.38); }
+}
+
+#record-btn.recording {
+  border-color: var(--danger); color: var(--danger);
+  animation: btn-pulse 1.2s ease-in-out infinite;
+}
+
+#download-btn {
+  border-color: var(--safe); color: var(--safe);
+  text-shadow: 0 0 14px rgba(0,255,136,.35);
+}
+
+/* ── Danger overlay ─────────────────────────────────────────── */
+#danger-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; opacity: 0;
+}
+#danger-overlay.show { opacity: 1; }
+
+.danger-flash {
+  position: absolute; inset: 0;
+  background: var(--danger); opacity: 0;
+}
+#danger-overlay.show .danger-flash { animation: flash .65s forwards; }
+@keyframes flash { 0% { opacity: .28; } 100% { opacity: 0; } }
+
+.danger-text {
+  font-family: var(--font-hud); font-weight: 900;
+  font-size: clamp(26px, 8.5vw, 50px);
+  color: #fff; letter-spacing: .04em; text-align: center;
+  text-shadow: 0 0 40px var(--danger), 0 0 70px var(--danger);
+  opacity: 0;
+}
+#danger-overlay.show .danger-text { animation: text-pop .65s forwards; }
+@keyframes text-pop {
+  0%   { opacity: 0; transform: scale(.82); }
+  28%  { opacity: 1; transform: scale(1.04); }
+  68%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(.95); }
+}
+
+/* ── Haptic pill ─────────────────────────────────────────────── */
+#haptic-pill {
+  position: fixed; bottom: 108px; left: 50%; transform: translateX(-50%);
+  font-size: 8px; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--safe); text-shadow: 0 0 10px var(--safe);
+  opacity: 0; pointer-events: none; z-index: 50;
+  transition: opacity .18s;
+}
+#haptic-pill.show { opacity: 1; }
+
+/* ── Mic error ───────────────────────────────────────────────── */
+#mic-error {
+  display: none;
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(4,8,16,.92);
+  align-items: center; justify-content: center;
+  flex-direction: column; gap: 16px;
+  text-align: center; padding: 32px;
+}
+#mic-error.show { display: flex; }
+#mic-error h2 {
+  font-family: var(--font-hud); color: var(--danger);
+  font-size: 14px; letter-spacing: .15em;
+}
+#mic-error p {
+  font-size: 10px; color: var(--muted);
+  line-height: 1.7; max-width: 280px; letter-spacing: .06em;
+}
+#mic-error button {
+  padding: 12px 24px; border: 1px solid var(--pulse);
+  border-radius: 8px; background: transparent; color: var(--pulse);
+  font-family: var(--font-hud); font-size: 10px; letter-spacing: .15em;
+  cursor: pointer;
+}
