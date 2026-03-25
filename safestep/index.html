@@ -5,16 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <meta name="theme-color" content="#040810" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <title>SafeStep Signal</title>
 
   <!-- Fonts -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap"
-    rel="stylesheet"
-  />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
 
-  <!-- Styles -->
+  <!-- Leaflet (map) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- App styles -->
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body>
@@ -24,18 +24,44 @@
   <header>
     <div class="logo">Safe<em>Step</em> Signal</div>
     <div class="header-right">
+      <span id="geo-status" class="geo-status">GPS —</span>
       <button id="debug-toggle">DEBUG</button>
       <div class="live-dot" id="live-dot"></div>
     </div>
   </header>
 
+  <!-- ── MAP PANEL (hidden until toggled) ── -->
+  <div id="map-panel">
+    <div id="map-container"></div>
+    <div class="map-legend">
+      <span class="legend-dot safe"></span>CLEAR
+      <span class="legend-dot caution"></span>CAUTION
+      <span class="legend-dot danger"></span>DANGER
+      <span class="legend-dot memory"></span>ROAD MEMORY
+    </div>
+  </div>
+
   <!-- ── SONAR ── -->
   <div id="sonar-wrap">
     <canvas id="sonar-canvas"></canvas>
+
+    <!-- centre label -->
     <div id="threat-label">
       SAFE
       <span class="sub" id="threat-sub">SCANNER OFF</span>
     </div>
+
+    <!-- vehicle class tag (appears above centre label) -->
+    <div id="vehicle-tag" data-class="none"></div>
+
+    <!-- EV warning -->
+    <div id="ev-warning">⚠ SILENT VEHICLE — VERIFY VISUALLY</div>
+  </div>
+
+  <!-- ── CROSSING WINDOW PANEL ── -->
+  <div id="window-panel">
+    <div id="window-timer"></div>
+    <div id="window-trajectory"></div>
   </div>
 
   <!-- ── BOTTOM PANEL ── -->
@@ -43,80 +69,78 @@
 
     <div class="info-row">
       <span id="sens-readout">BASELINE ——</span>
-      <span>CROSSWALK GUARD · v2</span>
+      <span>CROSSWALK GUARD · v3</span>
     </div>
 
-    <!-- Sensitivity slider -->
     <div class="slider-row">
       <span class="slider-label">SENSITIVITY</span>
       <input type="range" id="sens-slider" min="1" max="5" step="1" value="3" />
       <span id="slider-val">3</span>
     </div>
 
-    <!-- Frequency visualiser -->
     <div id="freq-bars"></div>
 
-    <!-- Level meters -->
     <div class="meter-row">
       <span class="meter-label">ENV</span>
-      <div class="meter-track">
-        <div class="meter-fill" id="env-fill" style="background:var(--pulse)"></div>
-      </div>
+      <div class="meter-track"><div class="meter-fill" id="env-fill" style="background:var(--pulse)"></div></div>
       <span class="meter-val" id="env-val">—</span>
     </div>
     <div class="meter-row">
       <span class="meter-label">VEH</span>
-      <div class="meter-track">
-        <div class="meter-fill" id="veh-fill" style="background:var(--safe)"></div>
-      </div>
+      <div class="meter-track"><div class="meter-fill" id="veh-fill" style="background:var(--safe)"></div></div>
       <span class="meter-val" id="veh-val">—</span>
     </div>
 
-    <!-- Debug panel (hidden by default, toggle via header button) -->
+    <!-- Debug panel -->
     <div id="debug-panel">
-      BASELINE <span id="d-baseline">—</span> &nbsp;|&nbsp;
-      VEH <span id="d-veh">—</span> &nbsp;|&nbsp;
-      NOISE <span id="d-noise">—</span> &nbsp;|&nbsp;
-      THRESH C/D <span id="d-thresh">—</span> &nbsp;|&nbsp;
-      HOLD <span id="d-hold">0</span>/<span id="d-hold-max">—</span> &nbsp;|&nbsp;
-      FRAMES <span id="d-frames">0</span>
+      BL <span id="d-baseline">—</span> |
+      VEH <span id="d-veh">—</span> |
+      NOISE <span id="d-noise">—</span> |
+      T <span id="d-thresh">—</span> |
+      HOLD <span id="d-hold">0</span>/<span id="d-hold-max">—</span> |
+      CLASS <span id="d-class">—</span> |
+      WIN <span id="d-window">—</span> |
+      F <span id="d-frames">0</span>
     </div>
 
-    <!-- Data collection (label + record + download) -->
+    <!-- Stage controls -->
+    <div class="stage-row">
+      <button class="btn btn-stage" id="recal-btn">↺ RECAL</button>
+      <button class="btn btn-stage btn-demo" id="demo-btn">▶ DEMO</button>
+      <button class="btn btn-stage btn-map" id="map-btn">⊞ MAP</button>
+    </div>
+
+    <!-- Data collection -->
     <div class="label-btns">
       <button data-label="clear"   class="active">CLEAR</button>
       <button data-label="vehicle">VEHICLE</button>
       <button data-label="danger" >DANGER</button>
     </div>
-
     <div class="data-row">
-      <button class="btn" id="record-btn">⏺  RECORD DATA</button>
+      <button class="btn" id="record-btn">⏺ RECORD</button>
       <button class="btn" id="download-btn">↓ DOWNLOAD</button>
     </div>
 
-    <!-- Main scan button -->
     <button class="btn" id="scan-btn" style="width:100%">⬤ &nbsp;START SCANNING</button>
 
   </div>
 </div>
 
-<!-- ── DANGER OVERLAY ── -->
+<!-- ── OVERLAYS ── -->
 <div id="danger-overlay">
   <div class="danger-flash"></div>
   <div class="danger-text">⚠ VEHICLE<br>APPROACHING</div>
 </div>
 
-<!-- ── HAPTIC PILL ── -->
+<div id="demo-indicator">● DEMO MODE</div>
 <div id="haptic-pill">▮▮▮ VIBRATING ▮▮▮</div>
 
-<!-- ── MIC ERROR ── -->
 <div id="mic-error">
   <h2>MIC ACCESS DENIED</h2>
   <p>SafeStep needs your microphone to detect approaching vehicles.<br>Allow access and reload.</p>
   <button onclick="location.reload()">RELOAD</button>
 </div>
 
-<!-- ── SCRIPTS (ES modules) ── -->
 <script type="module" src="js/main.js"></script>
 </body>
 </html>

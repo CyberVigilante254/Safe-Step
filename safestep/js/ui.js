@@ -141,20 +141,65 @@ export const UI = {
     this.els.liveDot.classList.toggle('active', on);
   },
 
-  // ── Debug panel ─────────────────────────────────────────────
-  updateDebug(info) {
-    this.els.dBaseline.textContent = info.baseline;
-    this.els.dVeh.textContent      = info.veh;
-    this.els.dNoise.textContent    = info.noise;
-    this.els.dThresh.textContent   = `${info.caution} / ${info.danger}`;
-    this.els.dHold.textContent     = info.hold;
-    this.els.dHoldMax.textContent  = info.holdMax;
-    this.els.dFrames.textContent   = info.frames;
-  },
-
   // ── Record button ────────────────────────────────────────────
   setRecordingState(on) {
     this.els.recordBtn.textContent = on ? '◼  STOP RECORDING' : '⏺  RECORD DATA';
     this.els.recordBtn.classList.toggle('recording', on);
+  },
+
+  // ── Vehicle classification display ────────────────────────────
+  updateClassification(vehicleClass, evWarning) {
+    const tag = this.els.vehicleTag;
+    const warn = this.els.evWarning;
+    if (!tag) return;
+
+    const label = {
+      none: '', motorbike: 'BODA BODA', car: 'VEHICLE',
+      matatu: 'MATATU', electric: 'SILENT VEHICLE', hoot: 'HOOTING',
+    }[vehicleClass] || '';
+
+    tag.textContent = label;
+    tag.classList.toggle('visible', label !== '');
+    tag.dataset.class = vehicleClass;
+    if (warn) warn.classList.toggle('visible', evWarning);
+  },
+
+  // ── Crossing window display ───────────────────────────────────
+  updateCrossingWindow(windowOpen, windowSeconds, trajectory) {
+    const panel = this.els.windowPanel;
+    const timer = this.els.windowTimer;
+    const traj  = this.els.windowTrajectory;
+    if (!panel) return;
+
+    panel.classList.toggle('open',   windowOpen);
+    panel.classList.toggle('closed', !windowOpen && State.currentThreat > 0);
+
+    if (timer) {
+      timer.textContent = windowOpen
+        ? `CROSS NOW — ${windowSeconds}s`
+        : '';
+    }
+
+    const trajectoryLabels = {
+      approaching: '▲ APPROACHING',
+      receding:    '▼ PASSING',
+      present:     '● PRESENT',
+      clear:       '',
+    };
+    if (traj) traj.textContent = trajectoryLabels[trajectory] || '';
+  },
+
+  // ── Debug panel (comprehensive) ─────────────────────────────
+  updateDebug(info) {
+    const set = (id, v) => { const el = this.els[id]; if (el) el.textContent = v; };
+    set('dBaseline', info.baseline);
+    set('dVeh',      info.veh);
+    set('dNoise',    info.noise);
+    set('dThresh',   `${info.caution} / ${info.danger}`);
+    set('dHold',     info.hold);
+    set('dHoldMax',  info.holdMax);
+    set('dFrames',   info.frames);
+    set('dClass',    `${info.vehicleClass} (${info.confidence})`);
+    set('dWindow',   info.trajectory);
   },
 };

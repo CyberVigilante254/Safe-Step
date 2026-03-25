@@ -339,3 +339,183 @@ input[type=range]::-webkit-slider-thumb {
   font-family: var(--font-hud); font-size: 10px; letter-spacing: .15em;
   cursor: pointer;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   STAGE / DEMO ADDITIONS
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Stage row: recalibrate + demo */
+.stage-row {
+  display: flex; gap: 6px;
+}
+
+.btn-stage {
+  font-size: 10px;
+  padding: 12px 8px;
+}
+
+/* Demo button — distinct amber colour so it's easy to find on stage */
+.btn-demo {
+  border-color: var(--caution);
+  color: var(--caution);
+  text-shadow: 0 0 12px rgba(255,204,0,.4);
+}
+.btn-demo:hover {
+  box-shadow: 0 0 16px rgba(255,204,0,.2);
+}
+
+/* Demo mode indicator pill — fixed top centre */
+#demo-indicator {
+  position: fixed;
+  top: 14px; left: 50%; transform: translateX(-50%);
+  z-index: 200;
+  font-family: var(--font-hud); font-size: 9px;
+  letter-spacing: .2em; text-transform: uppercase;
+  color: var(--bg); background: var(--caution);
+  padding: 4px 14px; border-radius: 20px;
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s;
+  animation: demo-blink 1.2s ease-in-out infinite;
+}
+#demo-indicator.show { opacity: 1; }
+@keyframes demo-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .55; }
+}
+
+/* Recal button pulses briefly after tap */
+#recal-btn.pulsed {
+  border-color: var(--pulse);
+  color: var(--pulse);
+  animation: recal-flash .6s forwards;
+}
+@keyframes recal-flash {
+  0%   { box-shadow: 0 0 0 rgba(0,200,255,0); }
+  40%  { box-shadow: 0 0 24px rgba(0,200,255,.5); }
+  100% { box-shadow: 0 0 0 rgba(0,200,255,0); }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   V3 ADDITIONS — geo, map, crossing window, classification
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Geo status ─────────────────────────────────────────────── */
+.geo-status {
+  font-family: var(--font-hud); font-size: 7px;
+  letter-spacing: .12em; color: var(--muted);
+  transition: color .3s;
+}
+.geo-status.locked { color: var(--safe); }
+
+/* ── Map panel ──────────────────────────────────────────────── */
+#map-panel {
+  display: none;
+  position: fixed; inset: 0; z-index: 90;
+  flex-direction: column;
+  background: var(--bg);
+}
+#map-panel.visible { display: flex; }
+
+#map-container {
+  flex: 1;
+  /* Darken the OSM tiles to match the app's dark theme */
+  filter: invert(1) hue-rotate(200deg) brightness(0.85) saturate(0.7);
+}
+
+/* Keep our coloured overlays from being inverted */
+.leaflet-overlay-pane { filter: invert(1) hue-rotate(200deg); }
+
+.map-legend {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 16px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  font-size: 8px; letter-spacing: .15em; color: var(--muted);
+}
+.legend-dot {
+  width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+}
+.legend-dot.safe    { background: var(--safe); }
+.legend-dot.caution { background: var(--caution); }
+.legend-dot.danger  { background: var(--danger); }
+.legend-dot.memory  { background: var(--pulse); opacity: .5; }
+
+/* Map button active state */
+#map-btn.on { border-color: var(--pulse); color: var(--pulse); }
+.btn-map { border-color: var(--muted); }
+
+/* ── Vehicle classification tag ─────────────────────────────── */
+#vehicle-tag {
+  position: absolute;
+  top: -28px; left: 50%; transform: translateX(-50%);
+  font-family: var(--font-hud); font-size: 9px;
+  letter-spacing: .18em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 12px;
+  pointer-events: none;
+  opacity: 0; transition: opacity .3s;
+  white-space: nowrap;
+}
+#vehicle-tag.visible { opacity: 1; }
+#vehicle-tag[data-class="motorbike"] { background: rgba(255,204,0,.15); color: var(--caution); border: 1px solid rgba(255,204,0,.3); }
+#vehicle-tag[data-class="car"]       { background: rgba(255,34,68,.12);  color: var(--danger);  border: 1px solid rgba(255,34,68,.25); }
+#vehicle-tag[data-class="matatu"]    { background: rgba(255,34,68,.18);  color: var(--danger);  border: 1px solid rgba(255,34,68,.35); }
+#vehicle-tag[data-class="electric"]  { background: rgba(0,200,255,.12);  color: var(--pulse);   border: 1px solid rgba(0,200,255,.3);  }
+#vehicle-tag[data-class="hoot"]      { background: rgba(255,204,0,.12);  color: var(--caution); border: 1px solid rgba(255,204,0,.25); }
+
+/* ── EV warning banner ──────────────────────────────────────── */
+#ev-warning {
+  position: absolute;
+  bottom: -36px; left: 50%; transform: translateX(-50%);
+  font-size: 8px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--pulse); border: 1px solid rgba(0,200,255,.3);
+  background: rgba(0,200,255,.08);
+  padding: 4px 12px; border-radius: 8px;
+  pointer-events: none; white-space: nowrap;
+  opacity: 0; transition: opacity .3s;
+  animation: ev-pulse 2s ease-in-out infinite;
+}
+#ev-warning.visible { opacity: 1; }
+@keyframes ev-pulse {
+  0%, 100% { border-color: rgba(0,200,255,.3); }
+  50%       { border-color: rgba(0,200,255,.7); box-shadow: 0 0 12px rgba(0,200,255,.3); }
+}
+
+/* ── Crossing window panel ───────────────────────────────────── */
+#window-panel {
+  width: 100%;
+  padding: 0 18px;
+  min-height: 36px;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: all .3s;
+}
+
+#window-timer {
+  font-family: var(--font-hud); font-weight: 900;
+  font-size: clamp(13px, 4vw, 18px);
+  letter-spacing: .08em;
+  color: var(--muted);
+  transition: color .3s, text-shadow .3s;
+}
+
+#window-trajectory {
+  font-size: 8px; letter-spacing: .2em;
+  color: var(--muted); text-transform: uppercase;
+  transition: color .3s;
+}
+
+/* Window open — safe to cross */
+#window-panel.open #window-timer {
+  color: var(--safe);
+  text-shadow: 0 0 20px rgba(0,255,136,.6);
+  animation: window-tick 1s ease-in-out infinite;
+}
+#window-panel.open #window-trajectory { color: var(--safe); }
+
+/* Window closed with vehicle present */
+#window-panel.closed #window-timer   { color: var(--danger); }
+#window-panel.closed #window-trajectory { color: var(--danger); }
+
+@keyframes window-tick {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .7; }
+}
